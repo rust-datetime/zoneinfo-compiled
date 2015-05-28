@@ -1,0 +1,10 @@
+[package]
+name = "tz"
+version = "0.1.0"
+authors = ["Ben S <ogham@bsago.me>"]
+
+[[bin]]
+name = "tz"
+
+[dependencies]
+byteorder = "*"
