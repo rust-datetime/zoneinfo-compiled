@@ -39,7 +39,7 @@ struct Header {
 #[derive(Debug)]
 struct Transition {
     timestamp: u32,
-    index: usize,
+    ttype: u8,
 }
 
 #[derive(Debug)]
@@ -130,12 +130,24 @@ impl Parser {
         })
     }
 
-    fn read_transition_times(&mut self, count: usize) -> Result<Vec<u32>, Box<Error>> {
-        let mut buf = Vec::with_capacity(count);
+    fn read_transition_times(&mut self, count: usize) -> Result<Vec<Transition>, Box<Error>> {
+        let mut times = Vec::with_capacity(count);
         for _ in 0 .. count {
-            buf.push(try!(self.cursor.read_u32::<BigEndian>()));
+            times.push(try!(self.cursor.read_u32::<BigEndian>()));
         }
-        Ok(buf)
+
+        let mut types = Vec::with_capacity(count);
+        for _ in 0 .. count {
+            types.push(try!(self.cursor.read_u8()));
+        }
+
+
+        Ok(times.iter().zip(types.iter()).map(|(&ti, &ty)| {
+            Transition {
+                timestamp: ti,
+                ttype:     ty,
+            }
+        }).collect())
      }
 
     fn read_transition_indices(&mut self, count: usize) -> Result<Vec<u8>, Box<Error>> {
@@ -188,14 +200,9 @@ fn main() {
     let ts = parser.read_transition_times(header.num_transition_times as usize);
     println!("{:?}", ts);
 
-    let ti = parser.read_transition_indices(header.num_transition_times as usize);
-    println!("{:?}", ti);
-
     let tt = parser.read_info_structures(header.num_time_types as usize);
     println!("{:?}", tt);
 
     let tt = parser.read_leap_second_info(header.num_leap_seconds as usize);
     println!("{:?}", tt);
-
-
 }
