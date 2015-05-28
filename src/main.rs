@@ -1,19 +1,38 @@
 extern crate byteorder;
-use byteorder::{ ReadBytesExt, BigEndian };
+use byteorder::{ReadBytesExt, BigEndian};
 
 use std::error::Error;
 use std::fs::File;
 use std::io::{Cursor, Read};
-use std::mem;
 
 #[derive(Debug)]
 struct Header {
+
+    /// The version of this file's format - either '\0', or '2', or '3'.
     version: u8,
+
+    /// The number of Universal Time entries in this file.
+    /// (Equivalent to `tzh_ttisgmtcnt` in C)
     num_utc: u32,
+
+    /// The number of standard entries in this file.
+    /// (Equivalent to `tzh_ttisstdcnt` in C)
     num_standard: u32,
+
+    /// The number of leap second entries in this file.
+    /// (Equivalent to `tzh_leapcnt` in C)
     num_leap_seconds: u32,
+
+    /// The number of transition entries in this file.
+    /// (Equivalent to `tzh_timecnt` in C)
     num_transition_times: u32,
+
+    /// The number of local time types in this file.
+    /// (Equivalent to `tzh_typecnt` in C)
     num_time_types: u32,
+
+    /// The number of characters of time zone abbreviation strings in this file.
+    /// (Equivalent to `tzh_charcnt` in C)
     num_chars: u32,
 }
 
@@ -32,15 +51,29 @@ enum TransitionType {
 
 #[derive(Debug)]
 struct TimeInfo {
+
+    /// Number of seconds to be added to Universal Time.
+    /// (Equivalent to `tt_gmtoff` in C)
     offset: u32,
+
+    /// Whether to set DST.
+    /// (Equivalent to `tt_isdst` in C)
     is_dst: bool,
-    ttype:  u8,
+
+    /// Position in the array of time zone abbreviation characters, elsewhere
+    /// in the file.
+    /// (Equivalent to `tt_abbrind` in C)
+    ttype: u8,
 }
 
 #[derive(Debug)]
 struct LeapSecondInfo {
+
+    /// The time, as a number of seconds, at which a leap second occurs.
     timestamp: u32,
-    offset: u32,
+
+    /// Number of leap seconds to be added.
+    leap_second_count: u32,
 }
 
 #[derive(Debug)]
@@ -129,8 +162,8 @@ impl Parser {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
             buf.push(LeapSecondInfo {
-                timestamp:  try!(self.cursor.read_u32::<BigEndian>()),
-                offset:     try!(self.cursor.read_u32::<BigEndian>()),
+                timestamp:          try!(self.cursor.read_u32::<BigEndian>()),
+                leap_second_count:  try!(self.cursor.read_u32::<BigEndian>()),
             });
         }
         Ok(buf)
