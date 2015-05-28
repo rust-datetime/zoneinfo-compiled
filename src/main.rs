@@ -112,10 +112,10 @@ impl Parser {
         Ok(magic == *b"TZif")
     }
 
-    fn skip_initial_zeroes(&mut self, count: usize) -> Result<[u8; 15], Box<Error>> {
+    fn skip_initial_zeroes(&mut self) -> Result<(), Box<Error>> {
         let mut magic = [0u8; 15];
         try!(self.cursor.read(&mut magic));
-        Ok(magic)
+        Ok(())
     }
 
     fn read_header(&mut self) -> Result<Header, Box<Error>> {
@@ -180,8 +180,7 @@ fn main() {
     let magic = parser.read_magic_number();
     println!("{:?}", magic);
 
-    let zeroes = parser.skip_initial_zeroes(15);
-    println!("{:?}", zeroes);
+    parser.skip_initial_zeroes();
 
     let header = parser.read_header().unwrap();
     println!("{:?}", header);
