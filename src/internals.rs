@@ -288,20 +288,20 @@ impl fmt::Display for Error {
                 write!(f, "too many {} (tried to read {}, limit was {}", structures, intended_count, limit)
             },
         }
-	}
+    }
 }
 
 impl fmt::Display for Structures {
     fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
-		match *self {
+        match *self {
             Structures::Transitions        => "transitions".fmt(f),
             Structures::LocalTimeTypes     => "local time types".fmt(f),
             Structures::LeapSeconds        => "leap second".fmt(f),
             Structures::GMTFlags           => "GMT flags".fmt(f),
             Structures::StandardFlags      => "Standard Time flags".fmt(f),
             Structures::TimezoneAbbrChars  => "timezone abbreviation chars".fmt(f),
-		}
-	}
+        }
+    }
 }
 
 
