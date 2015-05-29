@@ -1,3 +1,8 @@
+//! Bare structures of time zone files
+//!
+//! For more information on what these values mean, see
+//! [man 5 tzfile](ftp://ftp.iana.org/tz/code/tzfile.5.txt).
+
 use byteorder::{ReadBytesExt, BigEndian};
 
 use std::error::Error;
@@ -37,12 +42,16 @@ pub struct Header {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TransitionData {
+
+    /// The time at which the rules for computing local time change.
     pub timestamp: u32,
-    pub ttype: u8,
+
+    /// Index into the local time types array for this transition.
+    pub local_time_type_index: u8,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct TimeData {
+pub struct LocalTimeTypeData {
 
     /// Number of seconds to be added to Universal Time.
     /// (Equivalent to `tt_gmtoff` in C)
@@ -115,11 +124,10 @@ impl Parser {
             types.push(try!(self.cursor.read_u8()));
         }
 
-
         Ok(times.iter().zip(types.iter()).map(|(&ti, &ty)| {
             TransitionData {
                 timestamp: ti,
-                ttype:     ty,
+                local_time_type_index: ty,
             }
         }).collect())
      }
@@ -132,10 +140,10 @@ impl Parser {
         Ok(buf)
     }
 
-    fn read_info_structures(&mut self, count: usize) -> Result<Vec<TimeData>, Box<Error>> {
+    fn read_info_structures(&mut self, count: usize) -> Result<Vec<LocalTimeTypeData>, Box<Error>> {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
-            buf.push(TimeData {
+            buf.push(LocalTimeTypeData {
                 offset:  try!(self.cursor.read_u32::<BigEndian>()),
                 is_dst:  try!(self.cursor.read_u8()),
                 name_offset: try!(self.cursor.read_u8()),
@@ -160,7 +168,7 @@ impl Parser {
 pub struct TZData {
     pub header: Header,
     pub transitions: Vec<TransitionData>,
-    pub time_info: Vec<TimeData>,
+    pub time_info: Vec<LocalTimeTypeData>,
     pub leap_seconds: Vec<LeapSecondData>,
     pub strings: Vec<u8>,
     pub standard_flags: Vec<u8>,
