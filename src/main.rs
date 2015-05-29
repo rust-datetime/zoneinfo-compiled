@@ -1,9 +1,12 @@
 extern crate byteorder;
 use byteorder::{ReadBytesExt, BigEndian};
 
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::{Cursor, Read};
+use std::path::Path;
+
 
 #[derive(Debug)]
 struct Header {
@@ -50,7 +53,7 @@ enum TransitionType {
 }
 
 #[derive(Debug)]
-struct TimeInfo {
+struct PartialTimeInfo {
 
     /// Number of seconds to be added to Universal Time.
     /// (Equivalent to `tt_gmtoff` in C)
@@ -63,7 +66,13 @@ struct TimeInfo {
     /// Position in the array of time zone abbreviation characters, elsewhere
     /// in the file.
     /// (Equivalent to `tt_abbrind` in C)
-    ttype: u8,
+    name_offset: u8,
+}
+
+#[derive(Debug)]
+struct TimeInfo {
+    partial: PartialTimeInfo,
+    ttype: TransitionType,
 }
 
 #[derive(Debug)]
@@ -158,13 +167,13 @@ impl Parser {
         Ok(buf)
     }
 
-    fn read_info_structures(&mut self, count: usize) -> Result<Vec<TimeInfo>, Box<Error>> {
+    fn read_info_structures(&mut self, count: usize) -> Result<Vec<PartialTimeInfo>, Box<Error>> {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
-            buf.push(TimeInfo {
+            buf.push(PartialTimeInfo {
                 offset:  try!(self.cursor.read_u32::<BigEndian>()),
                 is_dst:  try!(self.cursor.read_u8()) != 0,
-                ttype:   try!(self.cursor.read_u8()),
+                name_offset: try!(self.cursor.read_u8()),
             });
         }
         Ok(buf)
@@ -180,14 +189,22 @@ impl Parser {
         }
         Ok(buf)
     }
-
 }
 
 fn main() {
-    let mut file = File::open("/etc/localtime").unwrap();
-    let mut buf = Vec::new();
-    file.read_to_end(&mut buf);
+    for arg in env::args().skip(1) {
+        match File::open(&Path::new(&arg)) {
+            Ok(mut file) => {
+                let mut contents = Vec::new();
+                file.read_to_end(&mut contents);
+                describe_file(contents);
+            },
+            Err(e) => println!("Couldn't open file {}: {}", arg, e),
+        }
+    }
+}
 
+fn describe_file(buf: Vec<u8>) {
     let mut parser = Parser::new(buf);
     let magic = parser.read_magic_number();
     println!("{:?}", magic);
@@ -200,9 +217,31 @@ fn main() {
     let ts = parser.read_transition_times(header.num_transition_times as usize);
     println!("{:?}", ts);
 
-    let tt = parser.read_info_structures(header.num_time_types as usize);
-    println!("{:?}", tt);
+    let tt = parser.read_info_structures(header.num_time_types as usize).unwrap();
 
-    let tt = parser.read_leap_second_info(header.num_leap_seconds as usize);
-    println!("{:?}", tt);
+    let ls = parser.read_leap_second_info(header.num_leap_seconds as usize);
+    println!("ls: {:?}", ls);
+
+    let i = parser.read_transition_indices(header.num_chars as usize);
+    println!("i: {:?}", i);
+
+    let standards = parser.read_transition_indices(header.num_standard as usize).unwrap();
+    let utcs = parser.read_transition_indices(header.num_utc as usize).unwrap();
+
+    let types: Vec<_> = standards.iter()
+                                 .zip(utcs.iter())
+                                 .map(|(&a, &b)| bools(a != 0, b != 0))
+                                 .zip(tt.into_iter())
+                                 .map(|(t, i)| TimeInfo { partial: i, ttype: t })
+                                 .collect();
+
+    println!("{:?}", types);
+}
+
+fn bools(a: bool, b: bool) -> TransitionType {
+    match (a, b) {
+        (_,     true)   => TransitionType::UTC,
+        (true,  _)      => TransitionType::Standard,
+        (false, false)  => TransitionType::Wall,
+    }
 }
