@@ -104,7 +104,7 @@ pub struct Limits {
 impl Limits {
     /// No size limits. This might use *lots* of memory when reading an
     /// invalid file, so be careful.
-    pub fn none() {
+    pub fn none() -> Limits {
         Limits {
             max_transitions: None,
             max_local_time_types: None,
@@ -118,7 +118,7 @@ impl Limits {
     ///
     /// These values are taken from `tz_file.h`, at
     /// ftp://ftp.iana.org/tz/code/tzfile.h
-    pub fn sensible() {
+    pub fn sensible() -> Limits {
         Limits {
             max_transitions: Some(2000),
             max_local_time_types: Some(256),
