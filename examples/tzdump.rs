@@ -11,8 +11,8 @@ fn main() {
         match File::open(&Path::new(&arg)) {
             Ok(mut file) => {
                 let mut contents = Vec::new();
-                file.read_to_end(&mut contents);
-                match internals::parse(contents) {
+                file.read_to_end(&mut contents).unwrap();
+                match internals::parse(contents, internals::Limits::sensible()) {
                     Ok(tzdata) => println!("{:?}", tz::cook(tzdata)),
                     Err(e)     => println!("{}", e),
                 }

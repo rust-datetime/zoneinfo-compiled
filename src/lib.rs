@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 pub mod internals;
 
+
 /// The 'type' of time that the change was announced in.
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum TransitionType {
@@ -57,13 +58,14 @@ pub struct LocalTimeType {
     transition_type: TransitionType,
 }
 
+
 /// Convert the internal time zone data into a list of transitions.
 pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
-    let mut transitions = Vec::new();
-    let mut local_time_types = Vec::new();
+    let mut transitions = Vec::with_capacity(tz.header.num_transitions as usize);
+    let mut local_time_types = Vec::with_capacity(tz.header.num_local_time_types as usize);
 
     // First, build up a list of local time types...
-    for i in 0 .. tz.header.num_time_types as usize {
+    for i in 0 .. tz.header.num_local_time_types as usize {
         let ref data = tz.time_info[i];
 
         // Isolate the relevant bytes by the index of the start of the
@@ -79,14 +81,14 @@ pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
             offset:           data.offset,
             is_dst:           data.is_dst != 0,
             transition_type:  flags_to_transition_type(tz.standard_flags[i] != 0,
-                                                       tz.utc_flags[i]      != 0),
+                                                       tz.gmt_flags[i]      != 0),
         };
 
         local_time_types.push(Rc::new(info));
     }
 
     // ...then, link each transition with the time type it refers to.
-    for i in 0 .. tz.header.num_transition_times as usize {
+    for i in 0 .. tz.header.num_transitions as usize {
         let ref t = tz.transitions[i];
 
         let transition = Transition {
@@ -100,8 +102,8 @@ pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
     Some(transitions)
 }
 
-fn flags_to_transition_type(standard: bool, utc: bool) -> TransitionType {
-    match (standard, utc) {
+fn flags_to_transition_type(standard: bool, gmt: bool) -> TransitionType {
+    match (standard, gmt) {
         (_,     true)   => TransitionType::UTC,
         (true,  _)      => TransitionType::Standard,
         (false, false)  => TransitionType::Wall,
