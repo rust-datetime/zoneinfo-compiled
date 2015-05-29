@@ -77,10 +77,61 @@ pub struct LeapSecondData {
     pub leap_second_count: u32,
 }
 
+
+/// Maximum numbers of structures that can be loaded from a time zone data
+/// file. If more than these would be loaded, an error will be returned
+/// instead.
+///
+/// Why have limits? Well, the header portion of the file (see `Header`)
+/// specifies the numbers of structures that should be read as a `u32`
+/// four-byte integer. This means that
+#[derive(Debug, Clone)]
+pub struct Limits {
+
+    /// Maximum number of transition structures
+    pub max_transitions: Option<u32>,
+
+    /// Maximum number of local time type structures
+    pub max_local_time_types: Option<u32>,
+
+    /// Maximum number of bytes in timezone abbreviations
+    pub max_abbreviation_bytes: Option<u32>,
+
+    /// Maximum number of leap second specifications
+    pub max_leap_seconds: Option<u32>,
+}
+
+impl Limits {
+    /// No size limits. This might use *lots* of memory when reading an
+    /// invalid file, so be careful.
+    pub fn none() {
+        Limits {
+            max_transitions: None,
+            max_local_time_types: None,
+            max_abbreviation_bytes: None,
+            max_leap_seconds: None,
+        }
+    }
+
+    /// A reasonable set of default values that pose no danger of using lots
+    /// of memory.
+    ///
+    /// These values are taken from `tz_file.h`, at
+    /// ftp://ftp.iana.org/tz/code/tzfile.h
+    pub fn sensible() {
+        Limits {
+            max_transitions: Some(2000),
+            max_local_time_types: Some(256),
+            max_abbreviation_bytes: Some(50),
+            max_leap_seconds: Some(50),
+        }
+    }
+}
+
+
 struct Parser {
     cursor: Cursor<Vec<u8>>,
 }
-
 
 impl Parser {
     fn new(buf: Vec<u8>) -> Parser {

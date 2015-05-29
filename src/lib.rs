@@ -57,18 +57,6 @@ pub struct LocalTimeType {
     transition_type: TransitionType,
 }
 
-/// Maximum number of transition times
-static MAX_TIMES: usize = 1200;
-
-/// Maximum number of TimeInfo settings
-static MAX_TYPES: usize = 256;
-
-/// Maximum number of bytes in timezone abbreviations
-static MAX_CHARS: usize = 50;
-
-/// Maximum number of leap second specifications
-static MAX_LEAPS: usize = 50;
-
 /// Convert the internal time zone data into a list of transitions.
 pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
     let mut transitions = Vec::new();
@@ -78,7 +66,7 @@ pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
     for i in 0 .. tz.header.num_time_types as usize {
         let ref data = tz.time_info[i];
 
-        // Isolate the list of relevant bytes by the index of the start of the
+        // Isolate the relevant bytes by the index of the start of the
         // string and the next available null char
         let name_bytes = tz.strings.iter()
                                    .cloned()
