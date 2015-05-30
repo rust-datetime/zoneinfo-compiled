@@ -6,7 +6,7 @@ pub mod internals;
 
 /// The 'type' of time that the change was announced in.
 #[derive(Debug, PartialEq, Eq, Clone)]
-enum TransitionType {
+pub enum TransitionType {
 
     /// Standard Time ("non-summer" time)
     Standard,
@@ -23,10 +23,10 @@ enum TransitionType {
 pub struct Transition {
 
     /// Unix timestamp when the clocks change.
-    timestamp: u32,
+    pub timestamp: u32,
 
     /// The new description of the local time.
-    local_time_type: Rc<LocalTimeType>,
+    pub local_time_type: Rc<LocalTimeType>,
 }
 
 /// A leap second specification.
@@ -34,10 +34,10 @@ pub struct Transition {
 pub struct LeapSecond {
 
     /// Unix timestamp at which a leap second occurs.
-    timestamp: u32,
+    pub timestamp: u32,
 
     /// Number of leap seconds to be added.
-    leap_second_count: u32,
+    pub leap_second_count: u32,
 }
 
 /// A description of the local time in a particular timezone, during the
@@ -46,16 +46,16 @@ pub struct LeapSecond {
 pub struct LocalTimeType {
 
     /// The time zone abbreviation - such as "GMT" or "UTC".
-    name: String,
+    pub name: String,
 
     /// Number of seconds to be added to Universal Time.
-    offset: u32,
+    pub offset: u32,
 
     /// Whether to set DST.
-    is_dst: bool,
+    pub is_dst: bool,
 
     /// The current 'type' of time.
-    transition_type: TransitionType,
+    pub transition_type: TransitionType,
 }
 
 
