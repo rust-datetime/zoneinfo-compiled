@@ -49,7 +49,7 @@ pub struct LocalTimeType {
     pub name: String,
 
     /// Number of seconds to be added to Universal Time.
-    pub offset: u32,
+    pub offset: i32,
 
     /// Whether to set DST.
     pub is_dst: bool,

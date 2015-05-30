@@ -57,7 +57,7 @@ pub struct LocalTimeTypeData {
 
     /// Number of seconds to be added to Universal Time.
     /// (Equivalent to `tt_gmtoff` in C)
-    pub offset: u32,
+    pub offset: i32,
 
     /// Whether to set DST.
     /// (Equivalent to `tt_isdst` in C)
@@ -231,7 +231,7 @@ impl Parser {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
             buf.push(LocalTimeTypeData {
-                offset:  try!(self.cursor.read_u32::<BigEndian>()),
+                offset:  try!(self.cursor.read_i32::<BigEndian>()),
                 is_dst:  try!(self.cursor.read_u8()),
                 name_offset: try!(self.cursor.read_u8()),
             });
