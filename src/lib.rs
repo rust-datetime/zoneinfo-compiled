@@ -1,3 +1,27 @@
+#![crate_name = "tz"]
+#![crate_type = "rlib"]
+#![crate_type = "dylib"]
+
+//! This is a library for parsing zoneinfo files.
+//!
+//! ## Example
+//!
+//! ```no_run
+//! use std::fs::File;
+//! use std::io::Read;
+//! use std::path::Path;
+//! use tz::parse;
+//!
+//! let path = Path::new("/etc/localtime");
+//! let mut contents = Vec::new();
+//! File::open(path).unwrap().read_to_end(&mut contents).unwrap();
+//! let transitions = parse(contents).unwrap();
+//!
+//! for t in transitions {
+//!     println!("{:?}", t);
+//! }
+//! ```
+
 extern crate byteorder;
 use std::rc::Rc;
 
@@ -58,6 +82,9 @@ pub struct LocalTimeType {
     pub transition_type: TransitionType,
 }
 
+pub fn parse(input: Vec<u8>) -> Option<Vec<Transition>> {
+    cook(internals::parse(input, internals::Limits::sensible()).unwrap())
+}
 
 /// Convert the internal time zone data into a list of transitions.
 pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
