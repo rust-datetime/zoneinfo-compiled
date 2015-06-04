@@ -50,7 +50,7 @@ pub enum TransitionType {
     /// Wall clock time
     Wall,
 
-    // Co-ordinated Universal Time
+    /// Co-ordinated Universal Time
     UTC,
 }
 
