@@ -26,6 +26,7 @@ extern crate byteorder;
 use std::rc::Rc;
 
 pub mod internals;
+pub use internals::Result;
 
 
 /// The 'type' of time that the change was announced in.
@@ -82,12 +83,13 @@ pub struct LocalTimeType {
     pub transition_type: TransitionType,
 }
 
-pub fn parse(input: Vec<u8>) -> Option<Vec<Transition>> {
-    cook(internals::parse(input, internals::Limits::sensible()).unwrap())
+pub fn parse(input: Vec<u8>) -> Result<Vec<Transition>> {
+    let tz = try!(internals::parse(input, internals::Limits::sensible()));
+    cook(tz)
 }
 
 /// Convert the internal time zone data into a list of transitions.
-pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
+pub fn cook(tz: internals::TZData) -> Result<Vec<Transition>> {
     let mut transitions = Vec::with_capacity(tz.header.num_transitions as usize);
     let mut local_time_types = Vec::with_capacity(tz.header.num_local_time_types as usize);
 
@@ -104,7 +106,7 @@ pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
                                    .collect();
 
         let info = LocalTimeType {
-            name:             String::from_utf8(name_bytes).unwrap(),
+            name:             try!(String::from_utf8(name_bytes)),
             offset:           data.offset,
             is_dst:           data.is_dst != 0,
             transition_type:  flags_to_transition_type(tz.standard_flags[i] != 0,
@@ -126,7 +128,7 @@ pub fn cook(tz: internals::TZData) -> Option<Vec<Transition>> {
         transitions.push(transition);
     }
 
-    Some(transitions)
+    Ok(transitions)
 }
 
 fn flags_to_transition_type(standard: bool, gmt: bool) -> TransitionType {
