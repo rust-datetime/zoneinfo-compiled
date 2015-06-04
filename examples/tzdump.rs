@@ -1,5 +1,4 @@
 extern crate tz;
-use tz::internals;
 
 use std::env;
 use std::fs::File;
@@ -13,8 +12,8 @@ fn main() {
             Ok(mut file) => {
                 let mut contents = Vec::new();
                 file.read_to_end(&mut contents).unwrap();
-                match internals::parse(contents, internals::Limits::sensible()) {
-                    Ok(tzdata) => tzdump(tz::cook(tzdata).unwrap()),
+                match tz::parse(contents) {
+                    Ok(tzdata) => tzdump(tzdata),
                     Err(e)     => println!("{}", e),
                 }
             },
@@ -23,12 +22,12 @@ fn main() {
     }
 }
 
-fn tzdump(mut transitions: Vec<tz::Transition>) {
-    transitions.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+fn tzdump(mut tz: tz::TZData) {
+    tz.transitions.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
 
-    for t in transitions {
+    for t in tz.transitions {
         let l = &*t.local_time_type;
-        println!("{:10?}: name:{:5} offset:{:5} DST:{:5} type:{:?}",
+        println!("{:11?}: name:{:5} offset:{:5} DST:{:5} type:{:?}",
                   t.timestamp, l.name, l.offset, l.is_dst, l.transition_type);
     }
 }

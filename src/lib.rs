@@ -15,9 +15,9 @@
 //! let path = Path::new("/etc/localtime");
 //! let mut contents = Vec::new();
 //! File::open(path).unwrap().read_to_end(&mut contents).unwrap();
-//! let transitions = parse(contents).unwrap();
+//! let tz = parse(contents).unwrap();
 //!
-//! for t in transitions {
+//! for t in tz.transitions {
 //!     println!("{:?}", t);
 //! }
 //! ```
@@ -28,6 +28,17 @@ use std::rc::Rc;
 pub mod internals;
 pub use internals::Result;
 
+
+/// Parsed, interpreted contents of a zoneinfo file.
+#[derive(PartialEq, Eq, Debug, Clone)]
+pub struct TZData {
+
+    /// Vector of transitions that are described in this data.
+    pub transitions: Vec<Transition>,
+
+    /// Vector of leap seconds that are described in this data.
+    pub leap_seconds: Vec<LeapSecond>,
+}
 
 /// The 'type' of time that the change was announced in.
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -83,13 +94,14 @@ pub struct LocalTimeType {
     pub transition_type: TransitionType,
 }
 
-pub fn parse(input: Vec<u8>) -> Result<Vec<Transition>> {
+/// Parses a series of bytes into a timezone data structure.
+pub fn parse(input: Vec<u8>) -> Result<TZData> {
     let tz = try!(internals::parse(input, internals::Limits::sensible()));
     cook(tz)
 }
 
-/// Convert the internal time zone data into a list of transitions.
-pub fn cook(tz: internals::TZData) -> Result<Vec<Transition>> {
+/// Interpret a set of internal time zone data.
+pub fn cook(tz: internals::TZData) -> Result<TZData> {
     let mut transitions = Vec::with_capacity(tz.header.num_transitions as usize);
     let mut local_time_types = Vec::with_capacity(tz.header.num_local_time_types as usize);
 
@@ -128,9 +140,27 @@ pub fn cook(tz: internals::TZData) -> Result<Vec<Transition>> {
         transitions.push(transition);
     }
 
-    Ok(transitions)
+    let mut leap_seconds = Vec::new();
+    for ls in tz.leap_seconds.iter() {
+        let leap_second = LeapSecond {
+            timestamp: ls.timestamp,
+            leap_second_count: ls.leap_second_count,
+        };
+
+        leap_seconds.push(leap_second);
+    }
+
+    Ok(TZData {
+        transitions: transitions,
+        leap_seconds: leap_seconds,
+    })
 }
 
+/// Combine the two flags to get the type of this transition.
+///
+/// The transition type is stored as two separate flags in the data file. The
+/// first set comes completely before the second, so these can only be
+/// combined after the entire file has been read.
 fn flags_to_transition_type(standard: bool, gmt: bool) -> TransitionType {
     match (standard, gmt) {
         (_,     true)   => TransitionType::UTC,
