@@ -1,5 +1,11 @@
 //! Bare structures of time zone files
 //!
+//! This module reads data from a buffer of bytes, and parses it into a
+//! `TZData` structure -- **doing a minimum of interpretation as to what these
+//! values mean!** The data read are all kept as primitive numeric types. For
+//! the code that turns these numbers into actual timezone data, see the root
+//! module.
+//!
 //! For more information on what these values mean, see
 //! [man 5 tzfile](ftp://ftp.iana.org/tz/code/tzfile.5.txt).
 
@@ -124,7 +130,7 @@ impl Limits {
     /// of memory.
     ///
     /// These values are taken from `tz_file.h`, at
-    /// ftp://ftp.iana.org/tz/code/tzfile.h
+    /// [ftp://ftp.iana.org/tz/code/tzfile.h].
     pub fn sensible() -> Limits {
         Limits {
             max_transitions: Some(2000),
@@ -134,6 +140,9 @@ impl Limits {
         }
     }
 
+    /// Makes sure the values we just read from the header are within this set
+    /// of limits. Returns `Ok(())` if everything is within the limits, and a
+    /// boxed `Error` if at least one count is over.
     pub fn verify(self, header: &Header) -> Result<()> {
         let check = |structures, intended_count, limit| {
             if let Some(max) = limit {
@@ -251,22 +260,40 @@ impl Parser {
     }
 }
 
-
+/// A `std::result::Result` with a `Box<std::error::Error>` as the error type.
+/// This is used to return a bunch of errors early, including a limit being
+/// reached, the buffer failed to be read from, or a string not being valid
+/// UTF-8.
 pub type Result<T> = result::Result<T, Box<error::Error>>;
 
 #[derive(Debug)]
 pub enum Error {
+
+    /// The error when the first four bytes of the buffer weren't what they
+    /// should be.
     InvalidMagicNumber {
+
+        /// The four bytes that were actually read.
         bytes_read: [u8; 4],
     },
 
+    /// The error when too many structures would have been read from the
+    /// buffer, in order to prevent this library from using too much memory.
     LimitReached {
+
+        /// The type of structure that we attempted to read.
         structures: Structures,
+
+        /// The number of these structures that we attempted to read.
         intended_count: u32,
+
+        /// The maximum number of structures that we can get away with.
         limit: u32,
     }
 }
 
+/// A description of which value is being read. This gets used solely for
+/// error reporting.
 #[derive(Debug)]
 pub enum Structures {
     Transitions,
@@ -315,6 +342,7 @@ impl error::Error for Error {
 }
 
 
+/// The internal structure of a zoneinfo file.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TZData {
     pub header: Header,
@@ -326,6 +354,8 @@ pub struct TZData {
     pub gmt_flags: Vec<u8>,
 }
 
+/// Parse a series of bytes into a `TZData` structure, returning an error if
+/// the buffer fails to be read from, or a limit is reached.
 pub fn parse(buf: Vec<u8>, limits: Limits) -> Result<TZData> {
     let mut parser = Parser::new(buf);
     try!(parser.read_magic_number());
