@@ -47,7 +47,7 @@ pub enum TransitionType {
 pub struct Transition {
 
     /// Unix timestamp when the clocks change.
-    pub timestamp: u32,
+    pub timestamp: i32,
 
     /// The new description of the local time.
     pub local_time_type: Rc<LocalTimeType>,
@@ -58,7 +58,7 @@ pub struct Transition {
 pub struct LeapSecond {
 
     /// Unix timestamp at which a leap second occurs.
-    pub timestamp: u32,
+    pub timestamp: i32,
 
     /// Number of leap seconds to be added.
     pub leap_second_count: u32,

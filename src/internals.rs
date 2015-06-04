@@ -46,7 +46,7 @@ pub struct Header {
 pub struct TransitionData {
 
     /// The time at which the rules for computing local time change.
-    pub timestamp: u32,
+    pub timestamp: i32,
 
     /// Index into the local time types array for this transition.
     pub local_time_type_index: u8,
@@ -73,7 +73,7 @@ pub struct LocalTimeTypeData {
 pub struct LeapSecondData {
 
     /// The time, as a number of seconds, at which a leap second occurs.
-    pub timestamp: u32,
+    pub timestamp: i32,
 
     /// Number of leap seconds to be added.
     pub leap_second_count: u32,
@@ -203,7 +203,7 @@ impl Parser {
     fn read_transition_data(&mut self, count: usize) -> Result<Vec<TransitionData>> {
         let mut times = Vec::with_capacity(count);
         for _ in 0 .. count {
-            times.push(try!(self.cursor.read_u32::<BigEndian>()));
+            times.push(try!(self.cursor.read_i32::<BigEndian>()));
         }
 
         let mut types = Vec::with_capacity(count);
@@ -243,7 +243,7 @@ impl Parser {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
             buf.push(LeapSecondData {
-                timestamp:          try!(self.cursor.read_u32::<BigEndian>()),
+                timestamp:          try!(self.cursor.read_i32::<BigEndian>()),
                 leap_second_count:  try!(self.cursor.read_u32::<BigEndian>()),
             });
         }
