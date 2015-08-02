@@ -2,7 +2,7 @@
 
 This is a library for parsing the Olson zoneinfo database.
 
-### [View the Rustdoc](http://bsago.me/doc/tz)
+### [View the Rustdoc](http://datetime.rustdocs.org/tz/)
 
 
 ## Installation

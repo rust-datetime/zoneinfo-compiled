@@ -3,7 +3,7 @@ name = "tz"
 description = "Library for parsing zoneinfo files"
 
 authors = ["Ben S <ogham@bsago.me>"]
-documentation = "http://bsago.me/doc/tz"
+documentation = "http://datetime.rustdocs.org/tz/"
 homepage = "https://github.com/ogham/rust-tz"
 license = "MIT"
 version = "0.2.0"
