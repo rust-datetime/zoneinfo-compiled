@@ -23,7 +23,7 @@
 //! ```
 
 extern crate byteorder;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub mod internals;
 pub use internals::Result;
@@ -62,7 +62,7 @@ pub struct Transition {
     pub timestamp: i32,
 
     /// The new description of the local time.
-    pub local_time_type: Rc<LocalTimeType>,
+    pub local_time_type: Arc<LocalTimeType>,
 }
 
 /// A leap second specification.
@@ -125,7 +125,7 @@ pub fn cook(tz: internals::TZData) -> Result<TZData> {
                                                        tz.gmt_flags[i]      != 0),
         };
 
-        local_time_types.push(Rc::new(info));
+        local_time_types.push(Arc::new(info));
     }
 
     // ...then, link each transition with the time type it refers to.

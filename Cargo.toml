@@ -6,7 +6,7 @@ authors = ["Ben S <ogham@bsago.me>"]
 documentation = "http://datetime.rustdocs.org/tz/"
 homepage = "https://github.com/ogham/rust-tz"
 license = "MIT"
-version = "0.2.0"
+version = "0.2.1"
 
 [lib]
 name = "tz"
