@@ -260,6 +260,7 @@ impl Parser {
     }
 }
 
+
 /// A `std::result::Result` with a `Box<std::error::Error>` as the error type.
 /// This is used to return a bunch of errors early, including a limit being
 /// reached, the buffer failed to be read from, or a string not being valid
@@ -292,16 +293,13 @@ pub enum Error {
     }
 }
 
-/// A description of which value is being read. This gets used solely for
-/// error reporting.
-#[derive(Debug)]
-pub enum Structures {
-    Transitions,
-    LocalTimeTypes,
-    LeapSeconds,
-    GMTFlags,
-    StandardFlags,
-    TimezoneAbbrChars,
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        match *self {
+            Error::InvalidMagicNumber { .. }  => "invalid magic number",
+            Error::LimitReached { .. }        => "limit reached",
+        }
+    }
 }
 
 impl fmt::Display for Error {
@@ -318,6 +316,19 @@ impl fmt::Display for Error {
     }
 }
 
+
+/// A description of which value is being read. This gets used solely for
+/// error reporting.
+#[derive(Debug)]
+pub enum Structures {
+    Transitions,
+    LocalTimeTypes,
+    LeapSeconds,
+    GMTFlags,
+    StandardFlags,
+    TimezoneAbbrChars,
+}
+
 impl fmt::Display for Structures {
     fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
         match *self {
@@ -327,16 +338,6 @@ impl fmt::Display for Structures {
             Structures::GMTFlags           => "GMT flags".fmt(f),
             Structures::StandardFlags      => "Standard Time flags".fmt(f),
             Structures::TimezoneAbbrChars  => "timezone abbreviation chars".fmt(f),
-        }
-    }
-}
-
-
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::InvalidMagicNumber { .. }  => "invalid magic number",
-            Error::LimitReached { .. }        => "limit reached",
         }
     }
 }
@@ -380,4 +381,73 @@ pub fn parse(buf: Vec<u8>, limits: Limits) -> Result<TZData> {
         standard_flags:  standards,
         gmt_flags:       gmts,
     })
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn est() {
+        let bytes = vec![
+            0x54, 0x5A, 0x69, 0x66, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+            0x00, 0x00, 0x00, 0x04, 0xFF, 0xFF, 0xB9, 0xB0,
+            0x00, 0x00, 0x45, 0x53, 0x54, 0x00, 0x00, 0x00,
+        ];
+
+        let data = parse(bytes, Limits::sensible()).unwrap();
+        assert_eq!(data.header.num_transitions, 0);
+        assert_eq!(data.header.num_leap_seconds, 0);
+        assert_eq!(data.header.num_local_time_types, 1);
+    }
+
+    #[test]
+    fn japan() {
+        let bytes = vec![
+            0x54, 0x5A, 0x69, 0x66, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
+            0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x03,
+            0x00, 0x00, 0x00, 0x0D, 0xC3, 0x55, 0x3B, 0x70,
+            0xD7, 0x3E, 0x1E, 0x90, 0xD7, 0xEC, 0x16, 0x80,
+            0xD8, 0xF9, 0x16, 0x90, 0xD9, 0xCB, 0xF8, 0x80,
+            0xDB, 0x07, 0x1D, 0x10, 0xDB, 0xAB, 0xDA, 0x80,
+            0xDC, 0xE6, 0xFF, 0x10, 0xDD, 0x8B, 0xBC, 0x80,
+            0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01,
+            0x02, 0x00, 0x00, 0x7E, 0x90, 0x00, 0x00, 0x00,
+            0x00, 0x8C, 0xA0, 0x01, 0x05, 0x00, 0x00, 0x7E,
+            0x90, 0x00, 0x09, 0x4A, 0x43, 0x53, 0x54, 0x00,
+            0x4A, 0x44, 0x54, 0x00, 0x4A, 0x53, 0x54, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let data = parse(bytes, Limits::sensible()).unwrap();
+        assert_eq!(data.header.num_transitions, 9);
+        assert_eq!(data.header.num_leap_seconds, 0);
+        assert_eq!(data.header.num_local_time_types, 3);
+
+        assert_eq!(data.transitions, vec![
+            TransitionData { timestamp: -1_017_824_400, local_time_type_index: 2 },
+            TransitionData { timestamp:   -683_794_800, local_time_type_index: 1 },
+            TransitionData { timestamp:   -672_393_600, local_time_type_index: 2 },
+            TransitionData { timestamp:   -654_764_400, local_time_type_index: 1 },
+            TransitionData { timestamp:   -640_944_000, local_time_type_index: 2 },
+            TransitionData { timestamp:   -620_290_800, local_time_type_index: 1 },
+            TransitionData { timestamp:   -609_494_400, local_time_type_index: 2 },
+            TransitionData { timestamp:   -588_841_200, local_time_type_index: 1 },
+            TransitionData { timestamp:   -578_044_800, local_time_type_index: 2 },
+        ]);
+
+        assert_eq!(data.time_info, vec![
+            LocalTimeTypeData { offset: 32400, is_dst: 0, name_offset: 0 },
+            LocalTimeTypeData { offset: 36000, is_dst: 1, name_offset: 5 },
+            LocalTimeTypeData { offset: 32400, is_dst: 0, name_offset: 9 },
+        ]);
+    }
 }
