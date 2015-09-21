@@ -141,7 +141,7 @@ pub fn cook(tz: internals::TZData) -> Result<TZData> {
     }
 
     let mut leap_seconds = Vec::new();
-    for ls in tz.leap_seconds.iter() {
+    for ls in &tz.leap_seconds {
         let leap_second = LeapSecond {
             timestamp: ls.timestamp,
             leap_second_count: ls.leap_second_count,
