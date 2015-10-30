@@ -48,6 +48,7 @@ pub struct Header {
     pub num_abbr_chars: u32,
 }
 
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TransitionData {
 
@@ -57,6 +58,7 @@ pub struct TransitionData {
     /// Index into the local time types array for this transition.
     pub local_time_type_index: u8,
 }
+
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct LocalTimeTypeData {
@@ -74,6 +76,7 @@ pub struct LocalTimeTypeData {
     /// (Equivalent to `tt_abbrind` in C)
     pub name_offset: u8,
 }
+
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct LeapSecondData {

@@ -2,7 +2,7 @@
 #![crate_type = "rlib"]
 #![crate_type = "dylib"]
 
-//! This is a library for parsing zoneinfo files.
+//! This is a library for parsing compiled zoneinfo files.
 //!
 //! ## Example
 //!
@@ -40,6 +40,7 @@ pub struct TZData {
     pub leap_seconds: Vec<LeapSecond>,
 }
 
+
 /// The 'type' of time that the change was announced in.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TransitionType {
@@ -54,6 +55,7 @@ pub enum TransitionType {
     UTC,
 }
 
+
 /// A time change specification.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Transition {
@@ -65,6 +67,7 @@ pub struct Transition {
     pub local_time_type: Arc<LocalTimeType>,
 }
 
+
 /// A leap second specification.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct LeapSecond {
@@ -75,6 +78,7 @@ pub struct LeapSecond {
     /// Number of leap seconds to be added.
     pub leap_second_count: u32,
 }
+
 
 /// A description of the local time in a particular timezone, during the
 /// period in which the clocks do not change.
@@ -94,11 +98,13 @@ pub struct LocalTimeType {
     pub transition_type: TransitionType,
 }
 
+
 /// Parses a series of bytes into a timezone data structure.
 pub fn parse(input: Vec<u8>) -> Result<TZData> {
     let tz = try!(internals::parse(input, internals::Limits::sensible()));
     cook(tz)
 }
+
 
 /// Interpret a set of internal time zone data.
 pub fn cook(tz: internals::TZData) -> Result<TZData> {
@@ -155,6 +161,7 @@ pub fn cook(tz: internals::TZData) -> Result<TZData> {
         leap_seconds: leap_seconds,
     })
 }
+
 
 /// Combine the two flags to get the type of this transition.
 ///
