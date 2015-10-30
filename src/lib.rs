@@ -25,8 +25,8 @@
 extern crate byteorder;
 use std::sync::Arc;
 
-pub mod internals;
-pub use internals::Result;
+pub mod parser;
+pub use parser::Result;
 
 
 /// Parsed, interpreted contents of a zoneinfo file.
@@ -101,13 +101,13 @@ pub struct LocalTimeType {
 
 /// Parses a series of bytes into a timezone data structure.
 pub fn parse(input: Vec<u8>) -> Result<TZData> {
-    let tz = try!(internals::parse(input, internals::Limits::sensible()));
+    let tz = try!(parser::parse(input, parser::Limits::sensible()));
     cook(tz)
 }
 
 
 /// Interpret a set of internal time zone data.
-pub fn cook(tz: internals::TZData) -> Result<TZData> {
+pub fn cook(tz: parser::TZData) -> Result<TZData> {
     let mut transitions = Vec::with_capacity(tz.header.num_transitions as usize);
     let mut local_time_types = Vec::with_capacity(tz.header.num_local_time_types as usize);
 

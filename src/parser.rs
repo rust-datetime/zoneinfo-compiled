@@ -1,4 +1,4 @@
-//! Bare structures of time zone files
+//! Parsing and structures of time zone files
 //!
 //! This module reads data from a buffer of bytes, and parses it into a
 //! `TZData` structure -- **doing a minimum of interpretation as to what these
