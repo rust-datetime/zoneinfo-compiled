@@ -1,4 +1,4 @@
-#![crate_name = "tz"]
+#![crate_name = "zoneinfo_compiled"]
 #![crate_type = "rlib"]
 #![crate_type = "dylib"]
 
@@ -10,7 +10,7 @@
 //! use std::fs::File;
 //! use std::io::Read;
 //! use std::path::Path;
-//! use tz::parse;
+//! use zoneinfo_compiled::parse;
 //!
 //! let path = Path::new("/etc/localtime");
 //! let mut contents = Vec::new();
@@ -113,20 +113,20 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
 
     // First, build up a list of local time types...
     for i in 0 .. tz.header.num_local_time_types as usize {
-        let ref data = tz.time_info[i];
+        let ltt = &tz.time_info[i];
 
         // Isolate the relevant bytes by the index of the start of the
         // string and the next available null char
         let name_bytes = tz.strings.iter()
                                    .cloned()
-                                   .skip(data.name_offset as usize)
+                                   .skip(ltt.name_offset as usize)
                                    .take_while(|&c| c != 0)
                                    .collect();
 
         let info = LocalTimeType {
             name:             try!(String::from_utf8(name_bytes)),
-            offset:           data.offset,
-            is_dst:           data.is_dst != 0,
+            offset:           ltt.offset,
+            is_dst:           ltt.is_dst != 0,
             transition_type:  flags_to_transition_type(tz.standard_flags[i] != 0,
                                                        tz.gmt_flags[i]      != 0),
         };
@@ -136,7 +136,7 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
 
     // ...then, link each transition with the time type it refers to.
     for i in 0 .. tz.header.num_transitions as usize {
-        let ref t = tz.transitions[i];
+        let t = &tz.transitions[i];
 
         let transition = Transition {
             timestamp:        t.timestamp,

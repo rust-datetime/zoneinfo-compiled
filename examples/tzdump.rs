@@ -1,4 +1,4 @@
-extern crate tz;
+extern crate zoneinfo_compiled;
 
 use std::env;
 use std::fs::File;
@@ -12,7 +12,7 @@ fn main() {
             Ok(mut file) => {
                 let mut contents = Vec::new();
                 file.read_to_end(&mut contents).unwrap();
-                match tz::parse(contents) {
+                match zoneinfo_compiled::parse(contents) {
                     Ok(tzdata) => tzdump(tzdata),
                     Err(e)     => println!("{}", e),
                 }
@@ -22,7 +22,7 @@ fn main() {
     }
 }
 
-fn tzdump(mut tz: tz::TZData) {
+fn tzdump(mut tz: zoneinfo_compiled::TZData) {
     tz.transitions.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
 
     for t in tz.transitions {

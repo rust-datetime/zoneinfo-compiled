@@ -1,15 +1,15 @@
 [package]
-name = "tz"
-description = "Library for parsing zoneinfo files"
+name = "zoneinfo-compiled"
+description = "Library for parsing compiled zoneinfo files"
 
 authors = ["Ben S <ogham@bsago.me>"]
-documentation = "http://datetime.rustdocs.org/tz/"
-homepage = "https://github.com/ogham/rust-tz"
+documentation = "http://datetime.rustdocs.org/zoneinfo-compiled/"
+homepage = "https://github.com/rust-datetime/zoneinfo-compiled/"
 license = "MIT"
 version = "0.2.1"
 
 [lib]
-name = "tz"
+name = "zoneinfo_compiled"
 
 [dependencies]
 byteorder = "*"
