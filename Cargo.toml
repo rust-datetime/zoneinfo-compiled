@@ -13,3 +13,4 @@ name = "zoneinfo_compiled"
 
 [dependencies]
 byteorder = "*"
+datetime = "*"
