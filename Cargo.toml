@@ -1,5 +1,5 @@
 [package]
-name = "zoneinfo-compiled"
+name = "zoneinfo_compiled"
 description = "Library for parsing compiled zoneinfo files"
 
 authors = ["Ben S <ogham@bsago.me>"]
@@ -12,5 +12,5 @@ version = "0.2.1"
 name = "zoneinfo_compiled"
 
 [dependencies]
-byteorder = "*"
-datetime = "*"
+byteorder = "0.4"
+datetime = "0.4.2"
