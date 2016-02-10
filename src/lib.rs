@@ -89,7 +89,6 @@ pub struct LocalTimeType {
 
 /// Parses a series of bytes into a timezone data structure.
 pub fn parse(input: Vec<u8>) -> Result<TZData> {
-    println!("{:?}", input);
     let tz = try!(parser::parse(input, parser::Limits::sensible()));
     cook(tz)
 }
@@ -149,21 +148,37 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
     }
 
     if transitions.is_empty() {
-        return Err(Box::new(parser::Error::NoTransitions));
+        let ltt = local_time_types[0].clone();
+
+        Ok(TZData {
+            time_zone: OwnedTimeZone {
+                name: None,
+                fixed_timespans: OwnedFixedTimespanSet {
+                    first: FixedTimespan {
+                        offset: ltt.offset,
+                        is_dst: ltt.is_dst,
+                        name: Cow::Owned(ltt.name),
+                    },
+                    rest: Vec::new(),
+                },
+            },
+            leap_seconds: leap_seconds,
+        })
     }
+    else {
+        let first = transitions.remove(0);
 
-    let first = transitions.remove(0);
-
-    Ok(TZData {
-        time_zone: OwnedTimeZone {
-            name: None,
-            fixed_timespans: OwnedFixedTimespanSet {
-                first: first.1,
-                rest: transitions,
-            }
-        },
-        leap_seconds: leap_seconds,
-    })
+        Ok(TZData {
+            time_zone: OwnedTimeZone {
+                name: None,
+                fixed_timespans: OwnedFixedTimespanSet {
+                    first: first.1,
+                    rest: transitions,
+                }
+            },
+            leap_seconds: leap_seconds,
+        })
+    }
 }
 
 

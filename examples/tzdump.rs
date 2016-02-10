@@ -18,7 +18,7 @@ fn main() {
                 file.read_to_end(&mut contents).unwrap();
                 match zoneinfo_compiled::parse(contents) {
                     Ok(tzdata) => println!("{:#?}", tzdata),
-                    Err(e)     => println!("{}", e),
+                    Err(e)     => println!("Error: {}", e),
                 }
             },
             Err(e) => println!("Couldn't open file {}: {}", arg, e),
