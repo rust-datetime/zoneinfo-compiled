@@ -89,6 +89,7 @@ pub struct LocalTimeType {
 
 /// Parses a series of bytes into a timezone data structure.
 pub fn parse(input: Vec<u8>) -> Result<TZData> {
+    println!("{:?}", input);
     let tz = try!(parser::parse(input, parser::Limits::sensible()));
     cook(tz)
 }
@@ -145,6 +146,10 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
         };
 
         leap_seconds.push(leap_second);
+    }
+
+    if transitions.is_empty() {
+        return Err(Box::new(parser::Error::NoTransitions));
     }
 
     let first = transitions.remove(0);

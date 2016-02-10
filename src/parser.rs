@@ -293,7 +293,12 @@ pub enum Error {
 
         /// The maximum number of structures that we can get away with.
         limit: u32,
-    }
+    },
+
+    /// The error when a file doesn’t actually contain any transitions. (It
+    /// should always contain at least one, so we know what the *base* offset
+    /// from UTC is.)
+    NoTransitions,
 }
 
 impl error::Error for Error {
@@ -301,6 +306,7 @@ impl error::Error for Error {
         match *self {
             Error::InvalidMagicNumber { .. }  => "invalid magic number",
             Error::LimitReached { .. }        => "limit reached",
+            Error::NoTransitions              => "no transitions",
         }
     }
 }
@@ -314,6 +320,10 @@ impl fmt::Display for Error {
 
             Error::LimitReached { ref structures, ref intended_count, ref limit } => {
                 write!(f, "too many {} (tried to read {}, limit was {}", structures, intended_count, limit)
+            },
+
+            Error::NoTransitions => {
+                write!(f, "read 0 transitions")
             },
         }
     }
