@@ -86,6 +86,23 @@ pub struct LocalTimeType {
     pub transition_type: TimeType,
 }
 
+impl LocalTimeType {
+
+    /// Convert this set of fields into datetime’s `FixedTimespan`
+    /// representation.
+    ///
+    /// It doesn’t actually contain any `'static` data, but if the lifetime is
+    /// not specified, Rust ties its lifetime to `self`, when they’re actually
+    /// completely unrelated.
+    fn to_fixed_timespan(&self) -> FixedTimespan<'static> {
+        FixedTimespan {
+            offset: self.offset,
+            is_dst: self.is_dst,
+            name: Cow::Owned(self.name.clone()),
+        }
+    }
+}
+
 
 /// Parses a series of bytes into a timezone data structure.
 pub fn parse(input: Vec<u8>) -> Result<TZData> {
@@ -126,12 +143,7 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
     for i in 0 .. tz.header.num_transitions as usize {
         let t = &tz.transitions[i];
         let ltt = local_time_types[t.local_time_type_index as usize].clone();
-
-        let timespan = FixedTimespan {
-            offset: ltt.offset,
-            is_dst: ltt.is_dst,
-            name: Cow::Owned(ltt.name),
-        };
+        let timespan = ltt.to_fixed_timespan();
 
         let transition = (t.timestamp as i64, timespan);
         transitions.push(transition);
@@ -147,18 +159,17 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
         leap_seconds.push(leap_second);
     }
 
-    if transitions.is_empty() {
-        let ltt = local_time_types[0].clone();
+    // The `OwnedTimeZone` struct *requires* there to be at least one
+    // transition. If there aren’t any in the file, we need to reach back into
+    // the structure to get the *base* offset time, as it won’t be in the
+    // transitions list.
 
+    if transitions.is_empty() {
         Ok(TZData {
             time_zone: OwnedTimeZone {
                 name: None,
                 fixed_timespans: OwnedFixedTimespanSet {
-                    first: FixedTimespan {
-                        offset: ltt.offset,
-                        is_dst: ltt.is_dst,
-                        name: Cow::Owned(ltt.name),
-                    },
+                    first: local_time_types[0].to_fixed_timespan(),
                     rest: Vec::new(),
                 },
             },
@@ -166,6 +177,8 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
         })
     }
     else {
+        // We don’t care about the timestamp that the first transition happens
+        // at: we assume it to have been in effect forever.
         let first = transitions.remove(0);
 
         Ok(TZData {
