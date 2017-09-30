@@ -3,14 +3,14 @@ name = "zoneinfo_compiled"
 description = "Library for parsing compiled zoneinfo files"
 
 authors = ["Ben S <ogham@bsago.me>"]
-documentation = "http://datetime.rustdocs.org/zoneinfo-compiled/"
+documentation = "https://docs.rs/zoneinfo_compiled/"
 homepage = "https://github.com/rust-datetime/zoneinfo-compiled/"
 license = "MIT"
-version = "0.2.1"
+version = "0.4.5"
 
 [lib]
 name = "zoneinfo_compiled"
 
 [dependencies]
 byteorder = "0.4"
-datetime = "0.4.2"
+datetime = "0.4.5"
