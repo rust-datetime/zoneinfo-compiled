@@ -151,8 +151,8 @@ impl Limits {
             if let Some(max) = limit {
                 if intended_count > max {
                     return Err(Error::LimitReached {
-                        structures: structures,
-                        intended_count: intended_count,
+                        structures,
+                        intended_count,
                         limit: max,
                     });
                 }
@@ -378,21 +378,21 @@ pub fn parse(buf: Vec<u8>, limits: Limits) -> Result<TZData> {
     let header = parser.read_header()?;
     limits.verify(&header)?;
 
-    let transitions   = parser.read_transition_data(header.num_transitions as usize)?;
-    let time_types    = parser.read_local_time_type_data(header.num_local_time_types as usize)?;
-    let leap_seconds  = parser.read_leap_second_data(header.num_leap_seconds as usize)?;
-    let strings       = parser.read_octets(header.num_abbr_chars as usize)?;
-    let standards     = parser.read_octets(header.num_standard_flags as usize)?;
-    let gmts          = parser.read_octets(header.num_gmt_flags as usize)?;
+    let transitions    = parser.read_transition_data(header.num_transitions as usize)?;
+    let time_info      = parser.read_local_time_type_data(header.num_local_time_types as usize)?;
+    let leap_seconds   = parser.read_leap_second_data(header.num_leap_seconds as usize)?;
+    let strings        = parser.read_octets(header.num_abbr_chars as usize)?;
+    let standard_flags = parser.read_octets(header.num_standard_flags as usize)?;
+    let gmt_flags      = parser.read_octets(header.num_gmt_flags as usize)?;
 
     Ok(TZData {
-        header:          header,
-        transitions:     transitions,
-        time_info:       time_types,
-        leap_seconds:    leap_seconds,
-        strings:         strings,
-        standard_flags:  standards,
-        gmt_flags:       gmts,
+        header,
+        transitions,
+        time_info,
+        leap_seconds,
+        strings,
+        standard_flags,
+        gmt_flags,
     })
 }
 
