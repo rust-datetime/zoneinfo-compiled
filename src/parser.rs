@@ -85,7 +85,7 @@ pub struct LeapSecondData {
     pub timestamp: i32,
 
     /// Number of leap seconds to be added.
-    pub leap_second_count: u32,
+    pub leap_second_count: i32,
 }
 
 
@@ -256,7 +256,7 @@ impl Parser {
         for _ in 0 .. count {
             buf.push(LeapSecondData {
                 timestamp:          self.cursor.read_i32::<BigEndian>()?,
-                leap_second_count:  self.cursor.read_u32::<BigEndian>()?,
+                leap_second_count:  self.cursor.read_i32::<BigEndian>()?,
             });
         }
         Ok(buf)
