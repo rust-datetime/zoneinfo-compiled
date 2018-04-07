@@ -190,7 +190,7 @@ impl Parser {
             Ok(())
         }
         else {
-            Err(Box::new(Error::InvalidMagicNumber { bytes_read: magic }))
+            Err(Box::new(Error::InvalidMagicNumber))
         }
     }
 
@@ -275,11 +275,7 @@ pub enum Error {
 
     /// The error when the first four bytes of the buffer weren't what they
     /// should be.
-    InvalidMagicNumber {
-
-        /// The four bytes that were actually read.
-        bytes_read: [u8; 4],
-    },
+    InvalidMagicNumber,
 
     /// The error when too many structures would have been read from the
     /// buffer, in order to prevent this library from using too much memory.
@@ -304,9 +300,9 @@ pub enum Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::InvalidMagicNumber { .. }  => "invalid magic number",
-            Error::LimitReached { .. }        => "limit reached",
-            Error::NoTransitions              => "no transitions",
+            Error::InvalidMagicNumber   => "invalid magic number",
+            Error::LimitReached { .. }  => "limit reached",
+            Error::NoTransitions        => "no transitions",
         }
     }
 }
@@ -314,9 +310,7 @@ impl error::Error for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
         match *self {
-            Error::InvalidMagicNumber { ref bytes_read } => {
-                write!(f, "invalid magic number - got {:?}", bytes_read)
-            },
+            Error::InvalidMagicNumber => write!(f, "invalid magic number"),
 
             Error::LimitReached { ref structures, ref intended_count, ref limit } => {
                 write!(f, "too many {} (tried to read {}, limit was {}", structures, intended_count, limit)
