@@ -319,7 +319,7 @@ impl fmt::Display for Error {
             },
 
             Error::LimitReached { ref structures, ref intended_count, ref limit } => {
-                write!(f, "too many {} (tried to read {}, limit was {}", structures, intended_count, limit)
+                write!(f, "too many {} (tried to read {}, limit was {})", structures, intended_count, limit)
             },
 
             Error::NoTransitions => {
