@@ -24,19 +24,19 @@ pub trait CompiledData {
         use std::io::{Read, BufReader};
         use std::fs::File;
 
-        let f = try!(File::open(path));
+        let f = File::open(path)?;
         let mut r = BufReader::new(f);
         let mut contents: Vec<u8> = Vec::new();
 
-        try!(r.read_to_end(&mut contents));
-        let tz = try!(Self::parse(contents));
+        r.read_to_end(&mut contents)?;
+        let tz = Self::parse(contents)?;
         Ok(tz)
     }
 }
 
 impl CompiledData for TimeZone {
     fn parse(input: Vec<u8>) -> Result<TimeZone> {
-        let data = try!(parse(input));
+        let data = parse(input)?;
         let arc = Arc::new(data.time_zone);
         let tz = TimeZone(TimeZoneSource::Runtime(arc));
         Ok(tz)
@@ -106,7 +106,7 @@ impl LocalTimeType {
 
 /// Parses a series of bytes into a timezone data structure.
 pub fn parse(input: Vec<u8>) -> Result<TZData> {
-    let tz = try!(parser::parse(input, parser::Limits::sensible()));
+    let tz = parser::parse(input, parser::Limits::sensible())?;
     cook(tz)
 }
 
@@ -129,7 +129,7 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
                                    .collect();
 
         let info = LocalTimeType {
-            name:             try!(String::from_utf8(name_bytes)),
+            name:             String::from_utf8(name_bytes)?,
             offset:           ltt.offset as i64,
             is_dst:           ltt.is_dst != 0,
             transition_type:  flags_to_transition_type(tz.standard_flags[i] != 0,

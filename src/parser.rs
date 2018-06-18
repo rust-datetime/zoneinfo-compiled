@@ -151,8 +151,8 @@ impl Limits {
             if let Some(max) = limit {
                 if intended_count > max {
                     return Err(Error::LimitReached {
-                        structures: structures,
-                        intended_count: intended_count,
+                        structures,
+                        intended_count,
                         limit: max,
                     });
                 }
@@ -160,12 +160,12 @@ impl Limits {
             Ok(())
         };
 
-        try!(check(Structures::Transitions,       header.num_transitions,      self.max_transitions));
-        try!(check(Structures::LocalTimeTypes,    header.num_local_time_types, self.max_local_time_types));
-        try!(check(Structures::LeapSeconds,       header.num_leap_seconds,     self.max_leap_seconds));
-        try!(check(Structures::GMTFlags,          header.num_gmt_flags,        self.max_local_time_types));
-        try!(check(Structures::StandardFlags,     header.num_standard_flags,   self.max_local_time_types));
-        try!(check(Structures::TimezoneAbbrChars, header.num_abbr_chars,       self.max_abbreviation_chars));
+        check(Structures::Transitions,       header.num_transitions,      self.max_transitions)?;
+        check(Structures::LocalTimeTypes,    header.num_local_time_types, self.max_local_time_types)?;
+        check(Structures::LeapSeconds,       header.num_leap_seconds,     self.max_leap_seconds)?;
+        check(Structures::GMTFlags,          header.num_gmt_flags,        self.max_local_time_types)?;
+        check(Structures::StandardFlags,     header.num_standard_flags,   self.max_local_time_types)?;
+        check(Structures::TimezoneAbbrChars, header.num_abbr_chars,       self.max_abbreviation_chars)?;
 
         Ok(())
     }
@@ -185,7 +185,7 @@ impl Parser {
 
     fn read_magic_number(&mut self) -> Result<()> {
         let mut magic = [0u8; 4];
-        try!(self.cursor.read(&mut magic));
+        self.cursor.read(&mut magic)?;
         if magic == *b"TZif" {
             Ok(())
         }
@@ -196,31 +196,31 @@ impl Parser {
 
     fn skip_initial_zeroes(&mut self) -> Result<()> {
         let mut magic = [0u8; 15];
-        try!(self.cursor.read(&mut magic));
+        self.cursor.read(&mut magic)?;
         Ok(())
     }
 
     fn read_header(&mut self) -> Result<Header> {
         Ok(Header {
-            version:               try!(self.cursor.read_u8()),
-            num_gmt_flags:         try!(self.cursor.read_u32::<BigEndian>()),
-            num_standard_flags:    try!(self.cursor.read_u32::<BigEndian>()),
-            num_leap_seconds:      try!(self.cursor.read_u32::<BigEndian>()),
-            num_transitions:       try!(self.cursor.read_u32::<BigEndian>()),
-            num_local_time_types:  try!(self.cursor.read_u32::<BigEndian>()),
-            num_abbr_chars:        try!(self.cursor.read_u32::<BigEndian>()),
+            version:               self.cursor.read_u8()?,
+            num_gmt_flags:         self.cursor.read_u32::<BigEndian>()?,
+            num_standard_flags:    self.cursor.read_u32::<BigEndian>()?,
+            num_leap_seconds:      self.cursor.read_u32::<BigEndian>()?,
+            num_transitions:       self.cursor.read_u32::<BigEndian>()?,
+            num_local_time_types:  self.cursor.read_u32::<BigEndian>()?,
+            num_abbr_chars:        self.cursor.read_u32::<BigEndian>()?,
         })
     }
 
     fn read_transition_data(&mut self, count: usize) -> Result<Vec<TransitionData>> {
         let mut times = Vec::with_capacity(count);
         for _ in 0 .. count {
-            times.push(try!(self.cursor.read_i32::<BigEndian>()));
+            times.push(self.cursor.read_i32::<BigEndian>()?);
         }
 
         let mut types = Vec::with_capacity(count);
         for _ in 0 .. count {
-            types.push(try!(self.cursor.read_u8()));
+            types.push(self.cursor.read_u8()?);
         }
 
         Ok(times.iter().zip(types.iter()).map(|(&ti, &ty)| {
@@ -234,7 +234,7 @@ impl Parser {
     fn read_octets(&mut self, count: usize) -> Result<Vec<u8>> {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
-            buf.push(try!(self.cursor.read_u8()));
+            buf.push(self.cursor.read_u8()?);
         }
         Ok(buf)
     }
@@ -243,9 +243,9 @@ impl Parser {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
             buf.push(LocalTimeTypeData {
-                offset:  try!(self.cursor.read_i32::<BigEndian>()),
-                is_dst:  try!(self.cursor.read_u8()),
-                name_offset: try!(self.cursor.read_u8()),
+                offset:  self.cursor.read_i32::<BigEndian>()?,
+                is_dst:  self.cursor.read_u8()?,
+                name_offset: self.cursor.read_u8()?,
             });
         }
         Ok(buf)
@@ -255,8 +255,8 @@ impl Parser {
         let mut buf = Vec::with_capacity(count);
         for _ in 0 .. count {
             buf.push(LeapSecondData {
-                timestamp:          try!(self.cursor.read_i32::<BigEndian>()),
-                leap_second_count:  try!(self.cursor.read_u32::<BigEndian>()),
+                timestamp:          self.cursor.read_i32::<BigEndian>()?,
+                leap_second_count:  self.cursor.read_u32::<BigEndian>()?,
             });
         }
         Ok(buf)
@@ -319,7 +319,7 @@ impl fmt::Display for Error {
             },
 
             Error::LimitReached { ref structures, ref intended_count, ref limit } => {
-                write!(f, "too many {} (tried to read {}, limit was {}", structures, intended_count, limit)
+                write!(f, "too many {} (tried to read {}, limit was {})", structures, intended_count, limit)
             },
 
             Error::NoTransitions => {
@@ -372,27 +372,27 @@ pub struct TZData {
 /// the buffer fails to be read from, or a limit is reached.
 pub fn parse(buf: Vec<u8>, limits: Limits) -> Result<TZData> {
     let mut parser = Parser::new(buf);
-    try!(parser.read_magic_number());
-    try!(parser.skip_initial_zeroes());
+    parser.read_magic_number()?;
+    parser.skip_initial_zeroes()?;
 
-    let header = try!(parser.read_header());
-    try!(limits.verify(&header));
+    let header = parser.read_header()?;
+    limits.verify(&header)?;
 
-    let transitions   = try!(parser.read_transition_data(header.num_transitions as usize));
-    let time_types    = try!(parser.read_local_time_type_data(header.num_local_time_types as usize));
-    let leap_seconds  = try!(parser.read_leap_second_data(header.num_leap_seconds as usize));
-    let strings       = try!(parser.read_octets(header.num_abbr_chars as usize));
-    let standards     = try!(parser.read_octets(header.num_standard_flags as usize));
-    let gmts          = try!(parser.read_octets(header.num_gmt_flags as usize));
+    let transitions    = parser.read_transition_data(header.num_transitions as usize)?;
+    let time_info      = parser.read_local_time_type_data(header.num_local_time_types as usize)?;
+    let leap_seconds   = parser.read_leap_second_data(header.num_leap_seconds as usize)?;
+    let strings        = parser.read_octets(header.num_abbr_chars as usize)?;
+    let standard_flags = parser.read_octets(header.num_standard_flags as usize)?;
+    let gmt_flags      = parser.read_octets(header.num_gmt_flags as usize)?;
 
     Ok(TZData {
-        header:          header,
-        transitions:     transitions,
-        time_info:       time_types,
-        leap_seconds:    leap_seconds,
-        strings:         strings,
-        standard_flags:  standards,
-        gmt_flags:       gmts,
+        header,
+        transitions,
+        time_info,
+        leap_seconds,
+        strings,
+        standard_flags,
+        gmt_flags,
     })
 }
 
