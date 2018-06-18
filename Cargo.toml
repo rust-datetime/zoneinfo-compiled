@@ -12,5 +12,5 @@ version = "0.4.7"
 name = "zoneinfo_compiled"
 
 [dependencies]
-byteorder = "0.4"
+byteorder = "1"
 datetime = "0.4.7"
