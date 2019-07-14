@@ -2,4 +2,4 @@
 
 This is a library for parsing compiled versions of the Olson zoneinfo database.
 
-### [View the Rustdoc](http://datetime.rustdocs.org/zoneinfo-compiled/)
+### [View the Rustdoc](https://docs.rs/zoneinfo_compiled/)
