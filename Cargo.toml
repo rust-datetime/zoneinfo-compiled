@@ -6,7 +6,7 @@ authors = ["Ben S <ogham@bsago.me>"]
 documentation = "https://docs.rs/zoneinfo_compiled/"
 homepage = "https://github.com/rust-datetime/zoneinfo-compiled/"
 license = "MIT"
-version = "0.4.7"
+version = "0.4.8"
 
 [lib]
 name = "zoneinfo_compiled"
