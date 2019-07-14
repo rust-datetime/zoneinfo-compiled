@@ -128,12 +128,14 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
                                    .take_while(|&c| c != 0)
                                    .collect();
 
+        let std_flag = tz.standard_flags.get(i).copied().unwrap_or_default() != 0;
+        let gmt_flag = tz.gmt_flags.get(i).copied().unwrap_or_default() != 0;
+
         let info = LocalTimeType {
             name:             String::from_utf8(name_bytes)?,
             offset:           ltt.offset as i64,
             is_dst:           ltt.is_dst != 0,
-            transition_type:  flags_to_transition_type(tz.standard_flags[i] != 0,
-                                                       tz.gmt_flags[i]      != 0),
+            transition_type:  flags_to_transition_type(std_flag, gmt_flag),
         };
 
         local_time_types.push(info);
