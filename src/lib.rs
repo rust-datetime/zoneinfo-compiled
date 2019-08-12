@@ -1,6 +1,7 @@
 #![crate_name = "zoneinfo_compiled"]
 #![crate_type = "rlib"]
 #![crate_type = "dylib"]
+#![feature(copied)]
 
 //! This is a library for parsing compiled zoneinfo files.
 
