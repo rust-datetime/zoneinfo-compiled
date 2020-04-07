@@ -128,8 +128,9 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
                                    .take_while(|&c| c != 0)
                                    .collect();
 
-        let std_flag = tz.standard_flags.get(i).copied().unwrap_or_default() != 0;
-        let gmt_flag = tz.gmt_flags.get(i).copied().unwrap_or_default() != 0;
+        // (TODO: move to ‘copied’ when the library supports that Rust version)
+        let std_flag = tz.standard_flags.get(i).cloned().unwrap_or_default() != 0;
+        let gmt_flag = tz.gmt_flags.get(i).cloned().unwrap_or_default() != 0;
 
         let info = LocalTimeType {
             name:             String::from_utf8(name_bytes)?,
