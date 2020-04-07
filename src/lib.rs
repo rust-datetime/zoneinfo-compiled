@@ -172,32 +172,29 @@ pub fn cook(tz: parser::TZData) -> Result<TZData> {
     // transitions list.
 
     if transitions.is_empty() {
-        Ok(TZData {
-            time_zone: OwnedTimeZone {
-                name: None,
-                fixed_timespans: OwnedFixedTimespanSet {
-                    first: local_time_types[0].to_fixed_timespan(),
-                    rest: Vec::new(),
-                },
+        let time_zone = OwnedTimeZone {
+            name: None,
+            fixed_timespans: OwnedFixedTimespanSet {
+                first: local_time_types[0].to_fixed_timespan(),
+                rest: Vec::new(),
             },
-            leap_seconds: leap_seconds,
-        })
+        };
+
+        Ok(TZData { time_zone, leap_seconds })
     }
     else {
         // We don’t care about the timestamp that the first transition happens
         // at: we assume it to have been in effect forever.
         let first = transitions.remove(0);
+        let time_zone = OwnedTimeZone {
+            name: None,
+            fixed_timespans: OwnedFixedTimespanSet {
+                first: first.1,
+                rest: transitions,
+            }
+        };
 
-        Ok(TZData {
-            time_zone: OwnedTimeZone {
-                name: None,
-                fixed_timespans: OwnedFixedTimespanSet {
-                    first: first.1,
-                    rest: transitions,
-                }
-            },
-            leap_seconds: leap_seconds,
-        })
+        Ok(TZData { time_zone, leap_seconds })
     }
 }
 
