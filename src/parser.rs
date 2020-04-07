@@ -85,7 +85,7 @@ pub struct LeapSecondData {
     pub timestamp: i32,
 
     /// Number of leap seconds to be added.
-    pub leap_second_count: u32,
+    pub leap_second_count: i32,
 }
 
 
@@ -256,7 +256,7 @@ impl Parser {
         for _ in 0 .. count {
             buf.push(LeapSecondData {
                 timestamp:          self.cursor.read_i32::<BigEndian>()?,
-                leap_second_count:  self.cursor.read_u32::<BigEndian>()?,
+                leap_second_count:  self.cursor.read_i32::<BigEndian>()?,
             });
         }
         Ok(buf)
@@ -374,8 +374,8 @@ pub fn parse(buf: Vec<u8>, limits: Limits) -> Result<TZData> {
 
     let transitions    = parser.read_transition_data(header.num_transitions as usize)?;
     let time_info      = parser.read_local_time_type_data(header.num_local_time_types as usize)?;
-    let leap_seconds   = parser.read_leap_second_data(header.num_leap_seconds as usize)?;
     let strings        = parser.read_octets(header.num_abbr_chars as usize)?;
+    let leap_seconds   = parser.read_leap_second_data(header.num_leap_seconds as usize)?;
     let standard_flags = parser.read_octets(header.num_standard_flags as usize)?;
     let gmt_flags      = parser.read_octets(header.num_gmt_flags as usize)?;
 

@@ -64,7 +64,7 @@ pub struct LeapSecond {
     pub timestamp: i32,
 
     /// Number of leap seconds to be added.
-    pub leap_second_count: u32,
+    pub leap_second_count: i32,
 }
 
 
