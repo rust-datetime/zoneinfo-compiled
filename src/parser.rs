@@ -17,7 +17,7 @@ use std::io::{Cursor, Read};
 use std::result;
 
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Header {
 
     /// The version of this file's format - either '\0', or '2', or '3'.
@@ -49,7 +49,7 @@ pub struct Header {
 }
 
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct TransitionData {
 
     /// The time at which the rules for computing local time change.
@@ -60,7 +60,7 @@ pub struct TransitionData {
 }
 
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct LocalTimeTypeData {
 
     /// Number of seconds to be added to Universal Time.
@@ -78,7 +78,7 @@ pub struct LocalTimeTypeData {
 }
 
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct LeapSecondData {
 
     /// The time, as a number of seconds, at which a leap second occurs.
@@ -99,7 +99,7 @@ pub struct LeapSecondData {
 /// file could try to read *gigabytes* of data while trying to read time zone
 /// information. To prevent this, reasonable defaults are set, although they
 /// can be turned off if necessary.
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Limits {
 
     /// Maximum number of transition structures
@@ -270,7 +270,7 @@ impl Parser {
 /// UTF-8.
 pub type Result<T> = result::Result<T, Box<error::Error>>;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Error {
 
     /// The error when the first four bytes of the buffer weren't what they
@@ -326,7 +326,7 @@ impl fmt::Display for Error {
 
 /// A description of which value is being read. This gets used solely for
 /// error reporting.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Structures {
     Transitions,
     LocalTimeTypes,

@@ -1,4 +1,4 @@
-//#![warn(missing_copy_implementations)]
+#![warn(missing_copy_implementations)]
 //#![warn(missing_docs)]
 #![warn(nonstandard_style)]
 #![warn(trivial_numeric_casts)]
@@ -61,7 +61,7 @@ pub struct TZData {
 
 
 /// A leap second specification.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct LeapSecond {
 
     /// Unix timestamp at which a leap second occurs.
