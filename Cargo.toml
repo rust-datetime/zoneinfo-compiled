@@ -2,15 +2,17 @@
 name = "zoneinfo_compiled"
 description = "Library for parsing compiled zoneinfo files"
 
-authors = ["Ben S <ogham@bsago.me>"]
+authors = ["Benjamin Sago <ogham@bsago.me>"]
 documentation = "https://docs.rs/zoneinfo_compiled/"
+exclude = ["/README.md", "/LICENCE", "/.rustfmt.toml", "/.travis.yml"]
 homepage = "https://github.com/rust-datetime/zoneinfo-compiled/"
 license = "MIT"
+readme = "README.md"
 version = "0.4.8"
 
 [lib]
 name = "zoneinfo_compiled"
 
 [dependencies]
-byteorder = "1"
-datetime = "0.4.7"
+byteorder = "1.0"
+datetime = "0.4"
