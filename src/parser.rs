@@ -11,7 +11,7 @@
 
 use byteorder::{ReadBytesExt, BigEndian};
 
-use std::error;
+use std::error::Error as ErrorTrait;
 use std::fmt;
 use std::io::{Cursor, Read};
 use std::result;
@@ -268,7 +268,7 @@ impl Parser {
 /// This is used to return a bunch of errors early, including a limit being
 /// reached, the buffer failed to be read from, or a string not being valid
 /// UTF-8.
-pub type Result<T> = result::Result<T, Box<error::Error>>;
+pub type Result<T> = result::Result<T, Box<dyn ErrorTrait>>;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Error {
@@ -297,7 +297,7 @@ pub enum Error {
     NoTransitions,
 }
 
-impl error::Error for Error {
+impl ErrorTrait for Error {
     fn description(&self) -> &str {
         match *self {
             Error::InvalidMagicNumber   => "invalid magic number",
