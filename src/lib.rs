@@ -1,6 +1,9 @@
-#![crate_name = "zoneinfo_compiled"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
+//#![warn(missing_copy_implementations)]
+//#![warn(missing_docs)]
+#![warn(nonstandard_style)]
+#![warn(trivial_numeric_casts)]
+#![warn(unreachable_pub)]
+#![warn(unused)]
 
 //! This is a library for parsing compiled zoneinfo files.
 
@@ -16,6 +19,7 @@ use datetime::zone::runtime::{OwnedTimeZone, OwnedFixedTimespanSet};
 
 pub mod parser;
 pub use parser::Result;
+
 
 pub trait CompiledData {
     fn parse(input: Vec<u8>) -> Result<TimeZone>;
