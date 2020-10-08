@@ -4,7 +4,7 @@ description = "Library for parsing compiled zoneinfo files"
 
 authors = ["Benjamin Sago <ogham@bsago.me>"]
 documentation = "https://docs.rs/zoneinfo_compiled/"
-exclude = ["/README.md", "/LICENCE", "/.rustfmt.toml", "/.travis.yml"]
+exclude = ["/.rustfmt.toml", "/.travis.yml"]
 license = "MIT"
 repository = "https://github.com/rust-datetime/zoneinfo-compiled/"
 readme = "README.md"
